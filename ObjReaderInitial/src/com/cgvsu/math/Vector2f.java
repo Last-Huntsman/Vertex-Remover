@@ -6,6 +6,9 @@ public class Vector2f {
         this.x = x;
         this.y = y;
     }
-
+    @Override
+    public Vector2f clone() throws CloneNotSupportedException {
+        return (Vector2f) super.clone();
+    }
     float x, y;
 }

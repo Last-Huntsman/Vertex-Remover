@@ -14,5 +14,11 @@ public class Vector3f {
         return Math.abs(x - other.x) < eps && Math.abs(y - other.y) < eps && Math.abs(z - other.z) < eps;
     }
 
+    @Override
+    public Vector3f clone() throws CloneNotSupportedException {
+        return (Vector3f) super.clone();
+    }
+
+
     float x, y, z;
 }
