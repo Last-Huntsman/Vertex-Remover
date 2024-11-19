@@ -14,7 +14,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class ModelTest {
+public class ObjReaderTest {
 
     private Model model;
     private Polygon polygon;
@@ -42,9 +42,9 @@ public class ModelTest {
         model.normals.add(new Vector3f(0.0f, 0.0f, -1.0f)); // Нормаль 3
 
         // Добавление полигона, который использует эти вершины
-        polygon.setVertexIndices((ArrayList<Integer>) List.of(0,1,2));
-        polygon.setTextureVertexIndices((ArrayList<Integer>) List.of(0,1,2));
-        polygon.setNormalIndices((ArrayList<Integer>) List.of(0,1,2));
+        polygon.setVertexIndices(new ArrayList<>(List.of(0, 1, 2))); // Правильное создание списка вершин
+        polygon.setTextureVertexIndices(new ArrayList<>(List.of(0, 1, 2))); // Правильное создание списка текстурных координат
+        polygon.setNormalIndices(new ArrayList<>(List.of(0, 1, 2))); // Правильное создание списка нормалей
 
 
         model.polygons.add(polygon);
@@ -64,7 +64,7 @@ public class ModelTest {
     @Test
     public void testVertexDelete_RemovesVertices() {
         // Удаляем вершину с индексом 1
-        List<Integer> verticesToDelete = Arrays.asList(1);
+        List<Integer> verticesToDelete = new ArrayList<>(List.of(1));
         Model updatedModel = Eraser.vertexDelete(model, verticesToDelete, true, false);
 
         // Проверяем, что вершина с индексом 1 была удалена
