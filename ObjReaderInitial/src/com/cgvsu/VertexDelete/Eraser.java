@@ -27,7 +27,7 @@ public class Eraser {
             for (int q = 0; q < index.size(); q++) {
                 for (int j = 0; j < polygon.getVertexIndices().size(); j++) {
                     if (polygon.getVertexIndices().get(j).equals(index.get(q))) {
-                        deletetextureVertices.add(polygon.getVertexIndices().get(j));
+                        deletevertices.add(polygon.getVertexIndices().get(j));
                         deletenormals.add(polygon.getNormalIndices().get(j));
                         deletetextureVertices.add(polygon.getTextureVertexIndices().get(j));
 
@@ -42,10 +42,10 @@ public class Eraser {
         List<Integer> normalsList = new ArrayList<>(deletenormals);
         List<Integer> verticesList = new ArrayList<>(deletevertices);
 
-        for (int i = verticesList.size() - 1; i > 0; i--) {
+        for (int i = verticesList.size() - 1; i >= 0; i--) {
             rezultModel.vertices.remove((int) verticesList.get(i));
         }
-        for (int i = textureVerticesList.size() - 1; i > 0; i--) {
+        for (int i = textureVerticesList.size() - 1; i >= 0; i--) {
             rezultModel.textureVertices.remove((int) textureVerticesList.get(i));
         }
 

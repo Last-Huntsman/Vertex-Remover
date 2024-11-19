@@ -1,11 +1,13 @@
 package com.cgvsu;
 
+import com.cgvsu.VertexDelete.Eraser;
 import com.cgvsu.model.Model;
 import com.cgvsu.objreader.ObjReader;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 public class Main {
 
@@ -16,7 +18,7 @@ public class Main {
 
         System.out.println("Loading model ...");
         Model model = ObjReader.read(fileContent);
-
+        Model model1 = Eraser.vertexDelete(model, List.of(1),true,true);
         System.out.println("Vertices: " + model.vertices.size());
         System.out.println("Texture vertices: " + model.textureVertices.size());
         System.out.println("Normals: " + model.normals.size());
