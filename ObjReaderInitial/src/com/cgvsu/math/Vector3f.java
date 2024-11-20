@@ -15,8 +15,12 @@ public class Vector3f implements Cloneable  {
     }
 
     @Override
-    public Vector3f clone() throws CloneNotSupportedException {
-        return (Vector3f) super.clone();
+    public Vector3f clone()  {
+        try {
+            return (Vector3f) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

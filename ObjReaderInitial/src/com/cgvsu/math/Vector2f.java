@@ -7,8 +7,12 @@ public class Vector2f implements Cloneable {
         this.y = y;
     }
     @Override
-    public Vector2f clone() throws CloneNotSupportedException {
-        return (Vector2f) super.clone();
+    public Vector2f clone()  {
+        try {
+            return (Vector2f) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
     float x, y;
 }

@@ -12,41 +12,30 @@ public class Model implements Cloneable {
     public ArrayList<Vector3f> normals = new ArrayList<>();
     public ArrayList<Polygon> polygons = new ArrayList<>();
 
-    public Model() {}
+    public Model() {
+    }
 
     // Метод clone
     @Override
-    public  Model clone()  {
+    public Model clone() {
         Model clonedModel = new Model();
 
         // Копирование вершин
         clonedModel.vertices = new ArrayList<>();
         for (Vector3f vertex : this.vertices) {
-            try {
-                clonedModel.vertices.add(vertex.clone());
-            } catch (CloneNotSupportedException e) {
-                throw new RuntimeException(e);
-            }
+            clonedModel.vertices.add(vertex.clone());
         }
 
         // Копирование текстурных вершин
         clonedModel.textureVertices = new ArrayList<>();
         for (Vector2f textureVertex : this.textureVertices) {
-            try {
-                clonedModel.textureVertices.add(textureVertex.clone());
-            } catch (CloneNotSupportedException e) {
-                throw new RuntimeException(e);
-            }
+            clonedModel.textureVertices.add(textureVertex.clone());
         }
 
         // Копирование нормалей
         clonedModel.normals = new ArrayList<>();
         for (Vector3f normal : this.normals) {
-            try {
-                clonedModel.normals.add(normal.clone());
-            } catch (CloneNotSupportedException e) {
-                throw new RuntimeException(e);
-            }
+            clonedModel.normals.add(normal.clone());
         }
 
         // Копирование полигонов
