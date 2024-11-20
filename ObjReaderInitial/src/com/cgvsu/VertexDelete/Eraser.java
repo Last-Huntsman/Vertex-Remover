@@ -1,5 +1,6 @@
 package com.cgvsu.VertexDelete;
 
+import com.cgvsu.math.Vector2f;
 import com.cgvsu.model.Model;
 import com.cgvsu.model.Polygon;
 
@@ -25,7 +26,6 @@ public class Eraser {
             Set<Integer> textureVertexIndices = new HashSet<Integer>();
             Set<Integer> normalIndices = new HashSet<Integer>();
             Set<Integer> vertexIndices = new HashSet<Integer>();
-
 
 
             int k = 0;
@@ -69,19 +69,28 @@ public class Eraser {
                 }
             }
 
-            polygonrez.setNormalIndices(new ArrayList<>(normalIndices));
-            polygonrez.setTextureVertexIndices(new ArrayList<>(textureVertexIndices));
+            polygonrez.setNormalIndices(hanging_NormalIndices ? polygon.getNormalIndices() : new ArrayList<>(normalIndices));
+            polygonrez.setTextureVertexIndices(hanging_TexturelIndices ? polygon.getTextureVertexIndices() : new ArrayList<>(textureVertexIndices));
             polygonrez.setVertexIndices(new ArrayList<>(vertexIndices));
 
 
             polygons.add(polygonrez);
         }
 
-        for (int i = 0; i <model.textureVertices.size(); i++) {
-            if(!connectiontextureVertexIndices.containsKey(i) && !deletetextureVertices.contains(i)) modelrez.textureVertices.add(model.textureVertices.get(i));
+        if (hanging_TexturelIndices) modelrez.textureVertices = new_file ?  model.cloneTextureVertices() : model.textureVertices;
+        else {
+            for (int i = 0; i < model.textureVertices.size(); i++) {
+                if (!connectiontextureVertexIndices.containsKey(i) && !deletetextureVertices.contains(i))
+                    modelrez.textureVertices.add(model.textureVertices.get(i));
+            }
         }
-        for (int i = 0; i <model.normals.size(); i++) {
-            if(!connectionNormalIndices.containsKey(i) && !deletenormals.contains(i)) modelrez.normals.add(model.normals.get(i));
+
+        if (hanging_NormalIndices) modelrez.normals = new_file? model.cloneNormals() :model.normals;
+        else {
+            for (int i = 0; i < model.normals.size(); i++) {
+                if (!connectionNormalIndices.containsKey(i) && !deletenormals.contains(i))
+                    modelrez.normals.add(model.normals.get(i));
+            }
         }
 
         modelrez.polygons = polygons;

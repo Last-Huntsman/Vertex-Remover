@@ -15,35 +15,50 @@ public class Model implements Cloneable {
     public Model() {
     }
 
+    // Метод клонирования вершин
+    public ArrayList<Vector3f> cloneVertices() {
+        ArrayList<Vector3f> clonedVertices = new ArrayList<>();
+        for (Vector3f vertex : this.vertices) {
+            clonedVertices.add(vertex.clone());
+        }
+        return clonedVertices;
+    }
+
+    // Метод клонирования текстурных вершин
+    public ArrayList<Vector2f> cloneTextureVertices() {
+        ArrayList<Vector2f> clonedTextureVertices = new ArrayList<>();
+        for (Vector2f textureVertex : this.textureVertices) {
+            clonedTextureVertices.add(textureVertex.clone());
+        }
+        return clonedTextureVertices;
+    }
+
+    // Метод клонирования нормалей
+    public ArrayList<Vector3f> cloneNormals() {
+        ArrayList<Vector3f> clonedNormals = new ArrayList<>();
+        for (Vector3f normal : this.normals) {
+            clonedNormals.add(normal.clone());
+        }
+        return clonedNormals;
+    }
+
+    // Метод клонирования полигонов
+    public ArrayList<Polygon> clonePolygons() {
+        ArrayList<Polygon> clonedPolygons = new ArrayList<>();
+        for (Polygon polygon : this.polygons) {
+            clonedPolygons.add(polygon.clone());
+        }
+        return clonedPolygons;
+    }
+
     // Метод clone
     @Override
     public Model clone() {
         Model clonedModel = new Model();
-
-        // Копирование вершин
-        clonedModel.vertices = new ArrayList<>();
-        for (Vector3f vertex : this.vertices) {
-            clonedModel.vertices.add(vertex.clone());
-        }
-
-        // Копирование текстурных вершин
-        clonedModel.textureVertices = new ArrayList<>();
-        for (Vector2f textureVertex : this.textureVertices) {
-            clonedModel.textureVertices.add(textureVertex.clone());
-        }
-
-        // Копирование нормалей
-        clonedModel.normals = new ArrayList<>();
-        for (Vector3f normal : this.normals) {
-            clonedModel.normals.add(normal.clone());
-        }
-
-        // Копирование полигонов
-        clonedModel.polygons = new ArrayList<>();
-        for (Polygon polygon : this.polygons) {
-            clonedModel.polygons.add(polygon.clone());
-        }
-
+        clonedModel.vertices = this.cloneVertices();
+        clonedModel.textureVertices = this.cloneTextureVertices();
+        clonedModel.normals = this.cloneNormals();
+        clonedModel.polygons = this.clonePolygons();
         return clonedModel;
     }
 }
