@@ -6,16 +6,10 @@ import com.cgvsu.model.Polygon;
 import java.util.*;
 
 public class Eraser {
-
-    private static Set<Integer> deletetextureVertices = new HashSet<Integer>();
-    private static Set<Integer> deletenormals = new HashSet<Integer>();
-
-
-    public static Model vertexDelete(Model model, List<Integer> index, boolean new_file, boolean hanging_peaks) {
+    public static Model vertexDelete(Model model, List<Integer> index, boolean new_file, boolean hanging_NormalIndices,boolean hanging_TexturelIndices, boolean hanging_polygons) {
         Model modelrez = new Model();
         ArrayList<Polygon> polygons = new ArrayList<>();
-        Collections.sort(index);
-        Collections.reverse(index);
+
 
         Map<Integer, Integer> connectionVertexIndices = new HashMap<>();
 
@@ -30,11 +24,13 @@ public class Eraser {
             Set<Integer> textureVertexIndices = new HashSet<Integer>();
             Set<Integer> normalIndices = new HashSet<Integer>();
             Set<Integer> vertexIndices = new HashSet<Integer>();
+
             int k = 0;
             for (int j = 0; j < polygon.getVertexIndices().size(); j++) {
                 if (!index.contains(polygon.getVertexIndices().get(j))) k++;
             }
-            if (k < 3) continue;
+            if (k < 3 ) continue;
+
             for (int j = 0; j < polygon.getVertexIndices().size(); j++) {
                 if (index.contains(polygon.getVertexIndices().get(j))) continue;
                 else {
@@ -46,7 +42,7 @@ public class Eraser {
                         vertexIndices.add(connectionVertexIndices.get(polygon.getVertexIndices().get(j)));
                     }
 
-                    if (!connectiontextureVertexIndices.containsKey(polygon.getTextureVertexIndices().get(j))) {
+                    if (j<polygon.getTextureVertexIndices().size() && !connectiontextureVertexIndices.containsKey(polygon.getTextureVertexIndices().get(j))) {
                         textureVertexIndices.add(modelrez.textureVertices.size());
                         connectiontextureVertexIndices.put(polygon.getTextureVertexIndices().get(j), modelrez.textureVertices.size());
                         modelrez.textureVertices.add(new_file ? model.textureVertices.get(polygon.getTextureVertexIndices().get(j)).clone() : model.textureVertices.get(polygon.getTextureVertexIndices().get(j)));
@@ -54,7 +50,7 @@ public class Eraser {
                         textureVertexIndices.add(connectiontextureVertexIndices.get(polygon.getTextureVertexIndices().get(j)));
                     }
 
-                    if (!connectionNormalIndices.containsKey(polygon.getNormalIndices().get(j))) {
+                    if (j<polygon.getNormalIndices().size() && !connectionNormalIndices.containsKey(polygon.getNormalIndices().get(j))) {
                         normalIndices.add(modelrez.normals.size());
                         connectionNormalIndices.put(polygon.getNormalIndices().get(j), modelrez.normals.size());
                         modelrez.normals.add(new_file ? model.normals.get(polygon.getNormalIndices().get(j)).clone() : model.normals.get(polygon.getNormalIndices().get(j)));

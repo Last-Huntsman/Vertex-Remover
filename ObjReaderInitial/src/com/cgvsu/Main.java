@@ -18,7 +18,7 @@ public class Main {
 
         System.out.println("Loading model ...");
         Model model = ObjReader.read(fileContent);
-        Model model1 = Eraser.vertexDelete(model, List.of(1),true,true);
+        Model model1 = Eraser.vertexDelete(model, List.of(1),true,true,true,true);
         System.out.println("Vertices: " + model.vertices.size());
         System.out.println("Texture vertices: " + model.textureVertices.size());
         System.out.println("Normals: " + model.normals.size());
