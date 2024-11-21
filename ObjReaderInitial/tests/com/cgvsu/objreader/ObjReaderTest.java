@@ -1,119 +1,215 @@
 package com.cgvsu.objreader;
 
 import com.cgvsu.VertexDelete.Eraser;
-import com.cgvsu.math.Vector2f;
-import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Model;
-import com.cgvsu.model.Polygon;
-import org.junit.Before;
+import com.cgvsu.objreader.ObjReader;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
 public class ObjReaderTest {
-
-    private Model model;
-    private Polygon polygon;
-
-    @Before
-    public void setUp() {
-        // Создаем модель для теста
-        model = new Model();
-        polygon = new Polygon();
-
-        // Инициализация с фиктивными данными (например, индексы вершин, нормалей и текстур)
-        model.vertices.add(new Vector3f(0.0f, 0.0f, 0.0f));  // Вершина 0
-        model.vertices.add(new Vector3f(1.0f, 0.0f, 0.0f));  // Вершина 1
-        model.vertices.add(new Vector3f(0.0f, 1.0f, 0.0f));  // Вершина 2
-        model.vertices.add(new Vector3f(1.0f, 1.0f, 0.0f));  // Вершина 3
-
-        model.textureVertices.add(new Vector2f(0.0f, 0.0f));  // Текстурная вершина 0
-        model.textureVertices.add(new Vector2f(0.0f, 1.0f));  // Текстурная вершина 1
-        model.textureVertices.add(new Vector2f(1.0f, 0.0f));  // Текстурная вершина 2
-        model.textureVertices.add(new Vector2f(1.0f, 1.0f));  // Текстурная вершина 3
-
-        model.normals.add(new Vector3f(0.0f, 0.0f, 1.0f));  // Нормаль 0
-        model.normals.add(new Vector3f(0.0f, 1.0f, 0.0f));  // Нормаль 1
-        model.normals.add(new Vector3f(1.0f, 0.0f, 0.0f));  // Нормаль 2
-        model.normals.add(new Vector3f(0.0f, 0.0f, -1.0f)); // Нормаль 3
-
-        // Добавление полигона, который использует эти вершины
-        polygon.setVertexIndices(new ArrayList<>(List.of(0, 1, 2))); // Правильное создание списка вершин
-        polygon.setTextureVertexIndices(new ArrayList<>(List.of(0, 1, 2))); // Правильное создание списка текстурных координат
-        polygon.setNormalIndices(new ArrayList<>(List.of(0, 1, 2))); // Правильное создание списка нормалей
-
-
-        model.polygons.add(polygon);
+   static Path fileName = Path.of("C:\\Users\\zuzuk\\IdeaProjects\\Task3\\ObjReaderInitial\\tests\\SimpleModelsForReaderTests\\caracal_cube.obj");
+    static String fileContent;
+    static  Model model;
+    static {
+        try {
+            fileContent = Files.readString(fileName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        model = ObjReader.read(fileContent);
     }
 
     @Test
-    public void testClone_ModelCloning() {
-        // Клонируем модель
-        Model clonedModel = model.clone();
+    public void testDeleteSingleVertex() throws IOException {
+        // Загружаем модель из OBJ-файла
 
-        // Проверяем, что клонированная модель не равна исходной, но содержимое одинаково
-        assertNotSame("Cloned model should not be the same instance as the original model.", model, clonedModel);
-        assertEquals("Cloned model should have the same number of vertices.", model.vertices.size(), clonedModel.vertices.size());
-        assertEquals("Cloned model should have the same number of polygons.", model.polygons.size(), clonedModel.polygons.size());
+
+        // Удаляем вершину
+        List<Integer> verticesToDelete = List.of(0);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, false, true);
+
+        // Выводим результат в OBJ-формате
+        modifiedModel.exportToOBJ();
+
+        // Проверяем количество оставшихся вершин
+        assertEquals("Вершина не была удалена!", model.vertices.size() - 1, modifiedModel.vertices.size());
     }
 
     @Test
-    public void testVertexDelete_RemovesVertices() {
-        // Удаляем вершину с индексом 1
-        List<Integer> verticesToDelete = new ArrayList<>(List.of(1));
-        Model updatedModel = Eraser.vertexDelete(model, verticesToDelete, true, false);
+    public void testDeleteMultipleVertices() throws IOException {
 
-        // Проверяем, что вершина с индексом 1 была удалена
-        assertEquals("Vertex with index 1 should be removed.", 3, updatedModel.vertices.size());
-        assertFalse("Vertex with index 1 should be removed.", updatedModel.vertices.contains(new Vector3f(1.0f, 0.0f, 0.0f)));
+
+        // Удаляем несколько вершин
+        List<Integer> verticesToDelete = Arrays.asList(0, 1, 2);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, false, true);
+
+        // Выводим результат в OBJ-формате
+        modifiedModel.exportToOBJ();
+
+        // Проверяем количество оставшихся вершин
+        assertEquals("Несколько вершин не были удалены!", model.vertices.size() - 3, modifiedModel.vertices.size());
     }
 
     @Test
-    public void testPolygonVertexReferences_AfterVertexDeletion() {
-        // Удаляем вершину с индексом 1
-        List<Integer> verticesToDelete = Arrays.asList(1);
-        Model updatedModel = Eraser.vertexDelete(model, verticesToDelete, true, false);
+    public void testDeleteAndCheckPolygons() throws IOException {
 
-        // Проверяем, что полигон обновился
-        Polygon updatedPolygon = updatedModel.polygons.get(0);
-        assertEquals("The polygon should have 2 vertices after deletion.", 2, updatedPolygon.getVertexIndices().size());
-        assertFalse("The polygon should not contain vertex 1.", updatedPolygon.getVertexIndices().contains(1));
+        // Удаляем вершину
+        List<Integer> verticesToDelete = Collections.singletonList(0);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, false, false);
+
+        // Проверяем, что полигоны с удаленными вершинами тоже были удалены
+        int initialPolygonCount = model.polygons.size();
+        int modifiedPolygonCount = modifiedModel.polygons.size();
+
+        assertTrue("Полигоны не были корректно обработаны!", modifiedPolygonCount < initialPolygonCount);
     }
 
     @Test
-    public void testVertexDelete_DeletesTextureVertices() {
-        // Удаляем текстурную вершину с индексом 1
-        List<Integer> textureVerticesToDelete = Arrays.asList(1);
-        Model updatedModel = Eraser.vertexDelete(model, textureVerticesToDelete, true, false);
+    public void testHangingIndices() throws IOException {
 
-        // Проверяем, что текстурная вершина с индексом 1 была удалена
-        assertEquals("Texture vertex with index 1 should be removed.", 3, updatedModel.textureVertices.size());
-        assertFalse("Texture vertex with index 1 should be removed.", updatedModel.textureVertices.contains(new Vector2f(0.0f, 1.0f)));
+
+        // Удаляем вершину и проверяем "висячие" нормали
+        List<Integer> verticesToDelete = Collections.singletonList(0);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, true, true, true);
+
+        // Убедимся, что висячие нормали остались
+        assertEquals("Нормали должны были остаться!", model.normals.size(), modifiedModel.normals.size());
+    }
+    @Test
+    public void testDeleteAllVertices() throws IOException {
+        // Удаляем все вершины
+        List<Integer> verticesToDelete = new ArrayList<>();
+        for (int i = 0; i < model.vertices.size(); i++) {
+            verticesToDelete.add(i);
+        }
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, false, true);
+
+        // Проверяем, что не осталось вершин
+        assertTrue("Все вершины должны быть удалены!", modifiedModel.vertices.isEmpty());
+
+        // Проверяем, что не осталось полигонов
+        assertTrue("Все полигоны должны быть удалены!", modifiedModel.polygons.isEmpty());
     }
 
     @Test
-    public void testVertexDelete_DeletesNormals() {
-        // Удаляем нормаль с индексом 1
-        List<Integer> normalsToDelete = Arrays.asList(1);
-        Model updatedModel = Eraser.vertexDelete(model, normalsToDelete, true, false);
+    public void testDeleteWithHangingPolygons() throws IOException {
+        // Удаляем вершину, оставляя "висячие" полигоны
+        List<Integer> verticesToDelete = Collections.singletonList(0);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, false, true);
 
-        // Проверяем, что нормаль с индексом 1 была удалена
-        assertEquals("Normal with index 1 should be removed.", 3, updatedModel.normals.size());
-        assertFalse("Normal with index 1 should be removed.", updatedModel.normals.contains(new Vector3f(0.0f, 1.0f, 0.0f)));
+        // Проверяем, что полигоны остались
+        assertEquals("Полигоны не должны были быть удалены!", model.polygons.size(), modifiedModel.polygons.size());
     }
 
     @Test
-    public void testPolygonNormalReferences_AfterNormalDeletion() {
-        // Удаляем нормаль с индексом 1
-        List<Integer> normalsToDelete = Arrays.asList(1);
-        Model updatedModel = Eraser.vertexDelete(model, normalsToDelete, true, false);
+    public void testDeleteVertexWithTextureIndices() throws IOException {
+        // Удаляем вершину, также проверяя текстурные индексы
+        List<Integer> verticesToDelete = Collections.singletonList(0);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, true, true);
 
-        // Проверяем, что полигон обновился
-        Polygon updatedPolygon = updatedModel.polygons.get(0);
-        assertFalse("The polygon should not contain normal 1.", updatedPolygon.getNormalIndices().contains(1));
+        // Проверяем, что текстурные координаты корректно обработаны
+        assertTrue("Некоторые текстурные координаты не были удалены!",
+                modifiedModel.textureVertices.size() <= model.textureVertices.size());
     }
+
+    @Test
+    public void testDeleteWithPreservingNormalsAndTextures() throws IOException {
+        // Удаляем вершину, оставляя нормали и текстурные индексы
+        List<Integer> verticesToDelete = Collections.singletonList(0);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, true, true, true);
+
+        // Проверяем, что нормали и текстурные координаты остались неизменными
+        assertEquals("Все нормали должны были остаться!", model.normals.size(), modifiedModel.normals.size());
+        assertEquals("Все текстурные координаты должны были остаться!", model.textureVertices.size(), modifiedModel.textureVertices.size());
+    }
+
+    @Test
+    public void testDeleteMiddleVertex() throws IOException {
+        // Удаляем одну из "средних" вершин
+        int middleVertexIndex = model.vertices.size() / 2;
+        List<Integer> verticesToDelete = Collections.singletonList(middleVertexIndex);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, false, false);
+
+        // Проверяем, что модель содержит на одну вершину меньше
+        assertEquals("Средняя вершина не была удалена!", model.vertices.size() - 1, modifiedModel.vertices.size());
+
+        // Проверяем, что соответствующие полигоны были удалены
+        assertTrue("Полигоны не были корректно обработаны!",
+                modifiedModel.polygons.size() < model.polygons.size());
+    }
+
+    @Test
+    public void testDeleteVertexWithCloneMode() throws IOException {
+        // Удаляем вершину в режиме создания новой модели
+        List<Integer> verticesToDelete = Collections.singletonList(0);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, false, true);
+
+        // Проверяем, что исходная модель не изменилась
+        assertEquals("Оригинальная модель не должна была измениться!", model.vertices.size(), ObjReader.read(fileContent).vertices.size());
+        assertNotEquals("Измененная модель должна отличаться от оригинальной!", model.vertices.size(), modifiedModel.vertices.size());
+    }
+
+    @Test
+    public void testDeleteNonExistingVertex() throws IOException {
+        // Пытаемся удалить несуществующую вершину
+        List<Integer> verticesToDelete = Collections.singletonList(model.vertices.size() + 1);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, false, true);
+
+        // Проверяем, что модель осталась неизменной
+        assertEquals("Модель не должна была измениться!", model.vertices.size(), modifiedModel.vertices.size());
+        assertEquals("Количество полигонов не должно было измениться!", model.polygons.size(), modifiedModel.polygons.size());
+    }
+    @Test
+    public void testDeleteVertexWithNewFileTrue() throws IOException {
+        // Удаляем вершину с параметром newFile = true
+        List<Integer> verticesToDelete = Collections.singletonList(0);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, false, true);
+
+        // Проверяем, что исходная модель не изменилась
+        assertEquals("Оригинальная модель не должна была измениться!", model.vertices.size(), ObjReader.read(fileContent).vertices.size());
+        assertNotEquals("Модифицированная модель должна отличаться от оригинальной!", model.vertices.size(), modifiedModel.vertices.size());
+
+        // Убедимся, что модифицированная модель корректна
+        assertEquals("Количество вершин должно уменьшиться на 1!", model.vertices.size() - 1, modifiedModel.vertices.size());
+    }
+
+
+
+    @Test
+    public void testDeleteAllVerticesWithNewFileTrue() throws IOException {
+        // Удаляем все вершины с newFile = true
+        List<Integer> verticesToDelete = new ArrayList<>();
+        for (int i = 0; i < model.vertices.size(); i++) {
+            verticesToDelete.add(i);
+        }
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, false, true);
+
+        // Убедимся, что исходная модель осталась неизменной
+        assertFalse("Оригинальная модель не должна быть пустой!", ObjReader.read(fileContent).vertices.isEmpty());
+
+        // Проверяем, что модифицированная модель полностью очищена
+        assertTrue("Модифицированная модель должна быть пустой!", modifiedModel.vertices.isEmpty());
+        assertTrue("Все полигоны должны быть удалены в новой модели!", modifiedModel.polygons.isEmpty());
+    }
+
+    @Test
+    public void testDeleteAllVerticesWithNewFileFalse() throws IOException {
+        // Удаляем все вершины с newFile = false
+        List<Integer> verticesToDelete = new ArrayList<>();
+        for (int i = 0; i < model.vertices.size(); i++) {
+            verticesToDelete.add(i);
+        }
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, false, false);
+
+        // Проверяем, что оригинальная модель была изменена
+        assertTrue("Все вершины должны быть удалены!", modifiedModel.vertices.isEmpty());
+        assertTrue("Все полигоны должны быть удалены!", modifiedModel.polygons.isEmpty());
+    }
+
 }
