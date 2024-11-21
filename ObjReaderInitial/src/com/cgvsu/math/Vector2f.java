@@ -15,4 +15,12 @@ public class Vector2f implements Cloneable {
         }
     }
     float x, y;
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
 }
