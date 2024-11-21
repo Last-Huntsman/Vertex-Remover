@@ -22,9 +22,9 @@ public class Eraser {
             Polygon polygon = model.polygons.get(i);
             Polygon polygonrez = new Polygon();
 
-           List<Integer> textureVertexIndices = new ArrayList<>(polygon.getTextureVertexIndices().size());
-           List<Integer> normalIndices = new  ArrayList<>(polygon.getNormalIndices().size());
-          List<Integer> vertexIndices = new  ArrayList<>(polygon.getVertexIndices().size());
+            List<Integer> textureVertexIndices = new ArrayList<>(polygon.getTextureVertexIndices().size());
+            List<Integer> normalIndices = new ArrayList<>(polygon.getNormalIndices().size());
+            List<Integer> vertexIndices = new ArrayList<>(polygon.getVertexIndices().size());
 
 
             int k = 0;
@@ -73,7 +73,7 @@ public class Eraser {
                 }
             }
 
-            if (hanging_polygons || k==polygon.getVertexIndices().size()) {
+            if (hanging_polygons || k == polygon.getVertexIndices().size()) {
                 polygonrez.setNormalIndices(hanging_NormalIndices ? polygon.getNormalIndices() : new ArrayList<>(normalIndices));
                 polygonrez.setTextureVertexIndices(hanging_TexturelIndices ? polygon.getTextureVertexIndices() : new ArrayList<>(textureVertexIndices));
                 polygonrez.setVertexIndices(new ArrayList<>(vertexIndices));
@@ -90,6 +90,7 @@ public class Eraser {
                     modelrez.textureVertices.add(model.textureVertices.get(i));
             }
         }
+
         if (hanging_NormalIndices) modelrez.normals = new_file ? model.cloneNormals() : model.normals;
         else {
             for (int i = 0; i < model.normals.size(); i++) {
