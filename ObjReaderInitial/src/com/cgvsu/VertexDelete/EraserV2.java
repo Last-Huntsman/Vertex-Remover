@@ -71,9 +71,9 @@ public class EraserV2 {
     ) {
         Polygon polygonrez = new Polygon();
 
-        List<Integer> vertexIndices = new ArrayList<>();
-        List<Integer> textureVertexIndices = new ArrayList<>();
-        List<Integer> normalIndices = new ArrayList<>();
+        ArrayList<Integer> vertexIndices = new ArrayList<>();
+        ArrayList<Integer> textureVertexIndices = new ArrayList<>();
+        ArrayList<Integer> normalIndices = new ArrayList<>();
 
         int remainingVertices = 0;
         for (int vertexIndex : polygon.getVertexIndices()) {
