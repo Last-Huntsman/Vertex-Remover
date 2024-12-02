@@ -91,7 +91,8 @@ public class Eraser {
             }
         }
 
-        if (hanging_NormalIndices) modelrez.normals = new_file ? model.cloneNormals() : model.normals;
+        if (hanging_NormalIndices)
+            modelrez.normals = new_file ? model.cloneNormals() : model.normals;
         else {
             for (int i = 0; i < model.normals.size(); i++) {
                 if (!connectionNormalIndices.containsKey(i) && !deletenormals.contains(i))
@@ -100,7 +101,17 @@ public class Eraser {
         }
         modelrez.polygons = polygons;
 
-        if (new_file) return modelrez;
-        else return model = modelrez;
+        if (new_file) {
+            return modelrez;
+        }
+
+
+        model.vertices = new ArrayList<>(modelrez.vertices);
+        model.normals = new ArrayList<>(modelrez.normals);
+        model.textureVertices = new ArrayList<>(modelrez.textureVertices);
+        model.polygons = new ArrayList<>(modelrez.polygons);
+
+        return model; // Возврат уже модифицированного объекта
+
     }
 }

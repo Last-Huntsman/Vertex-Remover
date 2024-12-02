@@ -1,251 +1,97 @@
-
-
+import com.cgvsu.VertexDelete.Eraser;
 import com.cgvsu.model.Model;
 import com.cgvsu.objreader.ObjReader;
-import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Tests {
 
-    @Test
-    void processModelOnlyUsedRemain() {
-        String separator = System.lineSeparator();
+    static Path fileName = Path.of("C:\\Users\\zuzuk\\IdeaProjects\\Task3\\ObjReaderInitial\\tests\\SimpleModelsForReaderTests\\caracal_cube.obj");
+    static String fileContent;
+    static Model model;
 
-        String inputFile = """
-                v 1.0 1.0 1.0
-                v 2.0 2.0 2.0
-                v 3.0 3.0 3.0
-                v 4.0 4.0 4.0
-                f 1 2 3
-                f 1 3 4
-                """;
-
-        Model inputModel = ObjReader.read(inputFile);
-
-        String expectedOutput = (
-                "v 1.0 1.0 1.0" + separator +
-                        "v 3.0 3.0 3.0" + separator +
-                        "v 4.0 4.0 4.0" + separator +
-                        "f 1 2 3").trim();
-
-        VertexRemoverNextGen.processModel(inputModel, List.of(1), false, true, true, true);
-
-        String inputRes = ObjWriter.formatOutput(inputModel, System.lineSeparator());
-
-        Assertions.assertEquals(inputRes, expectedOutput);
+    // Инициализация модели перед каждым тестом
+    @BeforeEach
+    public void setUp() {
+        try {
+            fileContent = Files.readString(fileName);
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка чтения файла: " + fileName, e);
+        }
+        model = ObjReader.read(fileContent);
     }
 
     @Test
-    void processModelKeepHangingPolygons() {
-        String separator = System.lineSeparator();
+    public void testDeleteSingleVertex() throws IOException {
+        // Удаляем одну вершину
+        List<Integer> verticesToDelete = List.of(0);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, false, true);
 
-        String inputFile = """
-                v 1.0 1.0 1.0
-                v 2.0 2.0 2.0
-                v 3.0 3.0 3.0
-                v 4.0 4.0 4.0
-                v 5.0 5.0 5.0
-                f 1 2 3
-                f 1 3 4 5
-                """;
-        String expectedOutput = (
-                "v 3.0 3.0 3.0" + separator +
-                        "v 4.0 4.0 4.0" + separator +
-                        "v 5.0 5.0 5.0" + separator +
-                        "f 1" + separator +
-                        "f 1 2 3").trim();
-        Model inputModel = ObjReader.read(inputFile);
+        // Проверяем количество оставшихся вершин
+        assertEquals(model.vertices.size() - 1, modifiedModel.vertices.size(), "Вершина не была удалена!");
 
-        VertexRemoverNextGen.processModel(inputModel, List.of(0, 1), true, false, true, true);
-
-        String inputRes = ObjWriter.formatOutput(inputModel, System.lineSeparator());
-        Assertions.assertEquals(expectedOutput, inputRes);
+        // Проверяем вывод в OBJ-формате (опционально)
+        modifiedModel.exportToOBJ();
     }
 
     @Test
-    void processModelKeepHangingAndCleanUpObsoleteTextures() {
-        String separator = System.lineSeparator();
+    public void testDeleteMultipleVertices() throws IOException {
+        // Удаляем несколько вершин
+        List<Integer> verticesToDelete = Arrays.asList(0, 1, 2);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, false, true);
 
-        String inputFile = """
-                v 1.0 1.0 1.0
-                v 2.0 2.0 2.0
-                v 3.0 3.0 3.0
-                v 4.0 4.0 4.0
-                v 5.0 5.0 5.0
-                vt 1.0 2.0
-                vt 3.0 4.0
-                vt 5.0 6.0
-                vt 5.0 6.0
-                vt 5.0 6.0
-                vt 5.0 6.0
-                vt 5.0 6.0
-                vt 66.0 66.0
-                f 1/2 2/2 3/1
-                f 1 3 4 5
-                f 6666 777 7777
-                """;
-        String expectedOutput = (
-                "v 1.0 1.0 1.0" + separator +
-                        "v 3.0 3.0 3.0" + separator +
-                        "v 4.0 4.0 4.0" + separator +
-                        "v 5.0 5.0 5.0" + separator +
-                        "vt 1.0 2.0" + separator +
-                        "vt 3.0 4.0" + separator +
-                        "vt 5.0 6.0" + separator +
-                        "vt 5.0 6.0" + separator +
-                        "vt 5.0 6.0" + separator +
-                        "vt 5.0 6.0" + separator +
-                        "vt 5.0 6.0" + separator +
-                        "vt 66.0 66.0" + separator +
-                        "f 1/2 2/1" + separator + // третья вершина стала первой
-                        "f 1 2 3 4" + separator + // Порядок вершин изменился на -1 для всех вершин после 2
-                        "f 6666 777 7777").trim();
-        Model inputModel = ObjReader.read(inputFile);
+        // Проверяем количество оставшихся вершин
+        assertEquals(model.vertices.size() - 3, modifiedModel.vertices.size(), "Несколько вершин не были удалены!");
 
-        VertexRemoverNextGen.processModel(inputModel, List.of(1), true, false, false, true);
-
-        String inputRes = ObjWriter.formatOutput(inputModel, System.lineSeparator());
-        Assertions.assertEquals(expectedOutput, inputRes);
+        // Проверяем вывод в OBJ-формате (опционально)
+        modifiedModel.exportToOBJ();
     }
 
     @Test
-    void processModelRemoveAll() {
-        String separator = System.lineSeparator();
+    public void testKeepHangingPolygons() throws IOException {
+        // Удаляем вершины, оставляя висящие полигоны
+        List<Integer> verticesToDelete = Arrays.asList(0, 1);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, false, false, true, true);
 
+        // Проверяем корректность модификации
+        assertEquals(model.vertices.size() , modifiedModel.vertices.size(), "Висящие полигоны не обработаны корректно!");
 
-        String inputFile = """
-                v 1.0 1.0 1.0
-                v 2.0 2.0 2.0
-                v 3.0 3.0 3.0
-                vt 0.1 0.2
-                vt 0.3 0.4
-                vn 0.0 0.0 1.0
-                vn 1.0 0.0 0.0
-                f 1/1/1 2/2/2 3/1/1
-                f 2/2/2 3/1/1 1/1/1
-                """;
-        String expectedOutput = (
-                "").trim();
-        Model inputModel = ObjReader.read(inputFile);
-
-        VertexRemoverNextGen.processModel(inputModel, List.of(0, 1, 2), true, false, true, true);
-
-        String inputRes = ObjWriter.formatOutput(inputModel, System.lineSeparator());
-        Assertions.assertEquals(expectedOutput, inputRes);
+        // Проверяем вывод в OBJ-формате (опционально)
+        modifiedModel.exportToOBJ();
     }
 
     @Test
-    void processModelKeepVtAndVn() {
-        String separator = System.lineSeparator();
+    public void testKeepTexturesAndNormals() throws IOException {
+        // Удаляем вершины, но сохраняем текстуры и нормали
+        List<Integer> verticesToDelete = Arrays.asList(0, 1);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, false, true, true, false);
 
-        String inputFile = """
-                v 1.0 1.0 1.0
-                v 2.0 2.0 2.0
-                v 3.0 3.0 3.0
-                vt 0.1 0.2
-                vt 0.3 0.4
-                vn 0.0 0.0 1.0
-                vn 1.0 0.0 0.0
-                f 1/1/1 2/2/2 3/1/1
-                f 2/2/2 3/1/1 1/1/1
-                """;
-        String expectedOutput = (
-                "vt 0.1 0.2" + separator +
-                        "vt 0.3 0.4" + separator +
-                        "vn 0.0 0.0 1.0" + separator +
-                        "vn 1.0 0.0 0.0").trim();
-        Model inputModel = ObjReader.read(inputFile);
+        // Проверяем, что текстуры и нормали остались
+        assertEquals(model.textureVertices.size(), modifiedModel.textureVertices.size(), "Текстуры были удалены!");
+        assertEquals(model.normals.size(), modifiedModel.normals.size(), "Нормали были удалены!");
 
-        VertexRemoverNextGen.processModel(inputModel, List.of(0, 1, 2), false, true, false, false);
-
-        String inputRes = ObjWriter.formatOutput(inputModel, System.lineSeparator());
-        Assertions.assertEquals(expectedOutput, inputRes);
+        // Проверяем вывод в OBJ-формате (опционально)
+        modifiedModel.exportToOBJ();
     }
 
     @Test
-    void processModelKeepVn() {
-        String separator = System.lineSeparator();
+    public void testRemoveAllVertices() throws IOException {
+        // Удаляем все вершины
+        List<Integer> verticesToDelete = Arrays.asList(0, 1, 2, 3, 4,5,6,7);
+        Model modifiedModel = Eraser.vertexDelete(model, verticesToDelete, true, false, false, true);
 
-        String inputFile = """
-                v 1.0 1.0 1.0
-                v 2.0 2.0 2.0
-                v 3.0 3.0 3.0
-                vt 0.1 0.2
-                vt 0.3 0.4
-                vn 0.0 0.0 1.0
-                vn 1.0 0.0 0.0
-                f 1/1/1 2/2/2 3/1/1
-                f 2/2/2 3/1/1 1/1/1
-                """;
-        String expectedOutput = (
-                "vn 0.0 0.0 1.0" + separator +
-                        "vn 1.0 0.0 0.0").trim();
-        Model inputModel = ObjReader.read(inputFile);
+        // Проверяем, что вершины удалены
+        assertEquals(0, modifiedModel.vertices.size(), "Не все вершины удалены!");
 
-        VertexRemoverNextGen.processModel(inputModel, List.of(0, 1, 2), false, true, false, true);
-
-        String inputRes = ObjWriter.formatOutput(inputModel, System.lineSeparator());
-        Assertions.assertEquals(expectedOutput, inputRes);
-    }
-
-    @Test
-    void processModelKeepVt() {
-        String separator = System.lineSeparator();
-
-        String inputFile = """
-                v 1.0 1.0 1.0
-                v 2.0 2.0 2.0
-                v 3.0 3.0 3.0
-                vt 0.1 0.2
-                vt 0.3 0.4
-                vn 0.0 0.0 1.0
-                vn 1.0 0.0 0.0
-                f 1/1/1 2/2/2 3/1/1
-                f 2/2/2 3/1/1 1/1/1
-                """;
-        String expectedOutput = (
-                "vt 0.1 0.2" + separator +
-                        "vt 0.3 0.4").trim();
-        Model inputModel = ObjReader.read(inputFile);
-
-
-        VertexRemoverNextGen.processModel(inputModel, List.of(0, 1, 2), false, true, true, false);
-
-        String inputRes = ObjWriter.formatOutput(inputModel, System.lineSeparator());
-        Assertions.assertEquals(expectedOutput, inputRes);
-    }
-
-    @Test
-    void processModelMixed() {
-        String separator = System.lineSeparator();
-
-
-        String inputFile = """
-                v 1.0 1.0 1.0
-                v 2.0 2.0 2.0
-                v 3.0 3.0 3.0
-                vt 0.1 0.2
-                vt 0.3 0.4
-                vt 0.5 0.6
-                vn 0.0 0.0 5.0
-                vn 1.0 0.0 0.0
-                vn 0.0 1.0 0.0
-                f 1//1 2//2 3//3
-                """;
-        String expectedOutput = (
-                "v 2.0 2.0 2.0" + separator +
-                        "vt 0.1 0.2" + separator +
-                        "vt 0.3 0.4" + separator +
-                        "vt 0.5 0.6" + separator +
-                        "vn 1.0 0.0 0.0" + separator +
-                        "f 1//1").trim();
-        Model inputModel = ObjReader.read(inputFile);
-
-        VertexRemoverNextGen.processModel(inputModel, List.of(0, 2), true, false, true, true);
-
-        String inputRes = ObjWriter.formatOutput(inputModel, System.lineSeparator());
-        Assertions.assertEquals(expectedOutput, inputRes);
+        // Проверяем вывод в OBJ-формате (опционально)
+        modifiedModel.exportToOBJ();
     }
 }

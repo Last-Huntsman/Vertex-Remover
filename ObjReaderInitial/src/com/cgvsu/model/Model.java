@@ -16,6 +16,7 @@ public class Model implements Cloneable {
     public Model() {
     }
 
+
     // Метод клонирования вершин
     public ArrayList<Vector3f> cloneVertices() {
         ArrayList<Vector3f> clonedVertices = new ArrayList<>();
